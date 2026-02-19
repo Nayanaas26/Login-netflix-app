@@ -196,14 +196,18 @@ app.get('/api/me', (req, res) => {
 });
 
 // Health Check
+// Health Check
 app.get('/ping', (req, res) => {
+    const dbHost = process.env.DB_HOST;
+    const status = dbHost ? "OK" : "CRITICAL_ERROR: DB_HOST IS MISSING";
+
     res.json({
-        message: 'pong v2',
-        timestamp: new Date().toISOString(),
-        env_check: {
-            has_db_host: !!process.env.DB_HOST,
-            has_db_user: !!process.env.DB_USER,
-            host_value: process.env.DB_HOST ? 'Loaded' : 'Missing' // Don't expose actual host yet
+        version: 'v3 (Debug)',
+        status: status,
+        env_vars: {
+            DB_HOST: dbHost ? 'Loaded' : 'MISSING (Using localhost)',
+            DB_USER: process.env.DB_USER ? 'Loaded' : 'MISSING',
+            NODE_ENV: process.env.NODE_ENV
         }
     });
 });
