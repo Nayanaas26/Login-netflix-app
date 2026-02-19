@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 const dotenv = require("dotenv");
 
 // Only load .env if not in production (Vercel provides env vars automatically)
@@ -26,13 +27,19 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Trust Proxy (Required for Vercel/proxies to handle cookies correctly)
+app.set('trust proxy', 1);
+
 // Session Configuration
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'netflix-clone-secret-key',
+    secret: process.env.SESSION_SECRET || 'netflix-clone-premium-secret-5566',
     resave: false,
     saveUninitialized: false,
+    name: 'netflix.sid', // Custom cookie name
     cookie: {
-        secure: process.env.NODE_ENV === 'production', // True in production
+        secure: process.env.NODE_ENV === 'production', // True in production (HTTPS)
+        httpOnly: true,
+        sameSite: 'lax',
         maxAge: 24 * 60 * 60 * 1000 // 24 hours
     }
 }));
@@ -91,20 +98,23 @@ db.query(createTableQuery, (err) => {
 // Protected static files for Netflix
 // Helper to find protected folder
 function getProtectedPath() {
+    console.log("Searching for protected files...");
     const possiblePaths = [
         path.join(__dirname, '../protected/netflix'), // Local / Standard
         path.join(process.cwd(), 'protected/netflix'), // Vercel Root
         path.join(process.cwd(), 'netflix'), // Flattened
-        path.join(__dirname, 'protected/netflix') // Nested
+        path.join(__dirname, 'protected/netflix'), // Nested
+        path.join(__dirname, 'netflix') // Flattened Nested
     ];
 
     for (const p of possiblePaths) {
+        console.log(`Checking path: ${p}`);
         if (fs.existsSync(p)) {
-            console.log(`Found protected files at: ${p}`);
+            console.log(`✅ Found protected files at: ${p}`);
             return p;
         }
     }
-    console.error("Protected files not found in any expected location");
+    console.error("❌ Protected files NOT found in any expected location");
     return null;
 }
 
@@ -112,22 +122,40 @@ const protectedStaticPath = getProtectedPath();
 
 // Protected static files for Netflix
 if (protectedStaticPath) {
-    app.use('/netflix', authMiddleware, express.static(protectedStaticPath));
+    // Redirect /netflix to /netflix/ (optional but helpful for relative links)
+    app.get('/netflix', authMiddleware, (req, res, next) => {
+        if (!req.url.endsWith('/') && !req.path.includes('.')) {
+            return res.redirect(301, '/netflix/');
+        }
+        next();
+    });
 
-    // Fallback: manually serve index.html
-    app.get('/netflix', authMiddleware, (req, res) => {
+    app.use('/netflix', authMiddleware, express.static(protectedStaticPath, {
+        index: 'index.html',
+        fallthrough: true
+    }));
+
+    // Fallback: manually serve index.html if the static middleware missed it
+    app.get('/netflix/', authMiddleware, (req, res) => {
         const indexPath = path.join(protectedStaticPath, 'index.html');
-        res.sendFile(indexPath, (err) => {
-            if (err) {
-                console.error("Error serving protected index.html:", err);
-                res.status(500).send("Error loading Netflix app: File not found.");
-            }
-        });
+        // Double check existence to avoid crash on sendFile
+        if (fs.existsSync(indexPath)) {
+            res.sendFile(indexPath);
+        } else {
+            res.status(404).send("Netflix index.html not found in protected folder.");
+        }
     });
 } else {
     // If files are missing, at least verify the route works and show a helpful error
     app.get('/netflix', (req, res) => {
-        res.status(500).send("Configuration Error: Protected files missing from server bundle.");
+        res.status(500).json({
+            error: "Configuration Error",
+            message: "Protected files missing from server bundle.",
+            checked_paths: [
+                path.join(__dirname, '../protected/netflix'),
+                path.join(process.cwd(), 'protected/netflix')
+            ]
+        });
     });
 }
 
@@ -248,7 +276,6 @@ app.get('/ping', (req, res) => {
     });
 });
 
-const fs = require('fs');
 
 // Debug File System
 app.get('/debug-fs', (req, res) => {
