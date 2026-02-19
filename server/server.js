@@ -1,6 +1,13 @@
 const path = require('path');
-// Ensure dotenv loads from the correct directory (server/.env)
-require("dotenv").config({ path: path.join(__dirname, '.env') });
+const dotenv = require("dotenv");
+const dotenvPath = path.join(__dirname, '.env');
+const result = dotenv.config({ path: dotenvPath });
+
+if (result.error) {
+    console.error("Warning: .env file not found or could not be loaded from:", dotenvPath);
+} else {
+    console.log("Environment variables loaded from:", dotenvPath);
+}
 
 const express = require("express");
 const mysql = require("mysql2");
@@ -49,9 +56,10 @@ const db = mysql.createPool({
 // Test the pool connection
 db.getConnection((err, connection) => {
     if (err) {
-        console.error("Error connecting to MySQL Pool:", err);
+        console.error("CRITICAL: Error connecting to MySQL Pool:", err.message);
+        console.error("Ensure your database credentials in server/.env are correct and the database is accessible.");
     } else {
-        console.log("Connected to Aiven MySQL Pool");
+        console.log("Successfully connected to Aiven MySQL Pool");
         connection.release();
     }
 });

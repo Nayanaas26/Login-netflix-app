@@ -10,7 +10,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const toast = document.getElementById('toast');
 
     // Use relative path since frontend is served by the same backend
-    const API_URL = '';
+    // If not served by the same backend, default to localhost:5001
+    const API_URL = (window.location.protocol === 'file:')
+        ? 'http://localhost:5001'
+        : '';
 
     // Toggle logic
     toRegister.addEventListener('click', (e) => {
