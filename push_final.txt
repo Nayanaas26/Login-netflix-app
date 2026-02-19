@@ -1,0 +1,31 @@
+﻿git : Pushing to http
+s://github.com/Nayana
+as26/login-netflix-ap
+p.git
+At line:1 char:1
++ git push -v origin 
+main 2>&1 | Out-File 
+-FilePath 
+push_final.txt -Enc 
+...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (Pushing   
+  to http...netfl    
+ix-app.git:Strin    
+g) [], RemoteExc    
+eption
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+error: src refspec 
+main does not match 
+any
+error: failed to 
+push some refs to 'ht
+tps://github.com/Naya
+naas26/login-netflix-
+app.git'

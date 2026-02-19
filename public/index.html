@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Netflix | Auth System</title>
+    <link rel="stylesheet" href="style.css?v=1.1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Netflix Card -->
+        <div class="auth-card" id="auth-card">
+
+            <!-- Login Form -->
+            <div class="form-container" id="login-form">
+                <h2>Welcome Back</h2>
+                <p class="subtitle">Enter your credentials to access your account</p>
+
+                <form id="login-form-element">
+                    <div class="input-group">
+                        <label for="login-email">Email</label>
+                        <input type="email" id="login-email" placeholder="name@example.com" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn-primary" id="login-btn">Login</button>
+                </form>
+
+                <p class="toggle-text">Don't have an account? <a href="#" id="to-register">Register here</a></p>
+            </div>
+
+            <!-- Register Form -->
+            <div class="form-container hidden" id="register-form">
+                <h2>Create Account</h2>
+                <p class="subtitle">Join us and start your journey today</p>
+
+                <form id="register-form-element">
+                    <div class="input-group">
+                        <label for="reg-fullname">Full Name</label>
+                        <input type="text" id="reg-fullname" placeholder="John Doe" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="reg-email">Email</label>
+                        <input type="email" id="reg-email" placeholder="name@example.com" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="reg-password">Password</label>
+                        <input type="password" id="reg-password" placeholder="••••••••" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="reg-confirm">Confirm Password</label>
+                        <input type="password" id="reg-confirm" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn-primary" id="register-btn">Register</button>
+                </form>
+
+                <p class="toggle-text">Already have an account? <a href="#" id="to-login">Login here</a></p>
+            </div>
+
+            <!-- Toast Notifications -->
+            <div id="toast" class="toast hidden"></div>
+        </div>
+    </div>
+
+    <script src="script.js?v=1.1"></script>
+</body>
+
+</html>
