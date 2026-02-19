@@ -90,7 +90,19 @@ db.query(createTableQuery, (err) => {
 
 // Protected static files for Netflix
 try {
+    // Serve static assets from protected folder
     app.use('/netflix', authMiddleware, express.static(path.join(__dirname, '../protected/netflix')));
+
+    // Fallback: manually serve index.html if the static middleware doesn't catch the root /netflix request
+    app.get('/netflix', authMiddleware, (req, res) => {
+        const protectedPath = path.join(__dirname, '../protected/netflix/index.html');
+        res.sendFile(protectedPath, (err) => {
+            if (err) {
+                console.error("Error serving protected index.html:", err);
+                res.status(500).send("Error loading Netflix app: File not found or permission denied.");
+            }
+        });
+    });
 } catch (e) {
     console.error("Could not serve protected files:", e);
 }
