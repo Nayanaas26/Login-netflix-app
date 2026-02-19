@@ -183,6 +183,11 @@ app.get('/api/me', (req, res) => {
     }
 });
 
+// Health Check
+app.get('/ping', (req, res) => {
+    res.json({ message: 'pong v2', timestamp: new Date().toISOString() });
+});
+
 if (require.main === module) {
     app.listen(PORT, () => {
         console.log(`Server running on http://localhost:${PORT}`);
