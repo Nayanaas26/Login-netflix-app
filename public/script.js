@@ -74,7 +74,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (err) {
             console.error(err);
-            showToast('Connection error. Is server running?', 'error');
+            if (err.name === 'SyntaxError') {
+                showToast('Server error (invalid response)', 'error');
+            } else {
+                showToast(`Error: ${err.message}`, 'error');
+            }
         }
     });
 
@@ -106,7 +110,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (err) {
             console.error(err);
-            showToast('Connection error. Is server running?', 'error');
+            // Try to give a more helpful error message
+            if (err.name === 'SyntaxError') {
+                showToast('Server returned invalid data (likely a 500 error)', 'error');
+            } else {
+                showToast(`Error: ${err.message}`, 'error');
+            }
         }
     });
 });
