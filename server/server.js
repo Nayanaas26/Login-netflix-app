@@ -224,6 +224,29 @@ app.get('/ping', (req, res) => {
     });
 });
 
+const fs = require('fs');
+
+// Debug File System
+app.get('/debug-fs', (req, res) => {
+    const cwd = process.cwd();
+    const dirname = __dirname;
+    const protectedPath = path.join(__dirname, '../protected/netflix');
+
+    let files = {};
+
+    try { files.cwd = fs.readdirSync(cwd); } catch (e) { files.cwd = e.message; }
+    try { files.dirname = fs.readdirSync(dirname); } catch (e) { files.dirname = e.message; }
+    try { files.protected = fs.readdirSync(protectedPath); } catch (e) { files.protected = e.message; }
+    try { files.parent = fs.readdirSync(path.join(__dirname, '../')); } catch (e) { files.parent = e.message; }
+
+    res.json({
+        cwd,
+        dirname,
+        protectedPath,
+        files
+    });
+});
+
 if (require.main === module) {
     app.listen(PORT, () => {
         console.log(`Server running on http://localhost:${PORT}`);
