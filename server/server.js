@@ -89,22 +89,46 @@ db.query(createTableQuery, (err) => {
 });
 
 // Protected static files for Netflix
-try {
-    // Serve static assets from protected folder
-    app.use('/netflix', authMiddleware, express.static(path.join(__dirname, '../protected/netflix')));
+// Helper to find protected folder
+function getProtectedPath() {
+    const possiblePaths = [
+        path.join(__dirname, '../protected/netflix'), // Local / Standard
+        path.join(process.cwd(), 'protected/netflix'), // Vercel Root
+        path.join(process.cwd(), 'netflix'), // Flattened
+        path.join(__dirname, 'protected/netflix') // Nested
+    ];
 
-    // Fallback: manually serve index.html if the static middleware doesn't catch the root /netflix request
+    for (const p of possiblePaths) {
+        if (fs.existsSync(p)) {
+            console.log(`Found protected files at: ${p}`);
+            return p;
+        }
+    }
+    console.error("Protected files not found in any expected location");
+    return null;
+}
+
+const protectedStaticPath = getProtectedPath();
+
+// Protected static files for Netflix
+if (protectedStaticPath) {
+    app.use('/netflix', authMiddleware, express.static(protectedStaticPath));
+
+    // Fallback: manually serve index.html
     app.get('/netflix', authMiddleware, (req, res) => {
-        const protectedPath = path.join(__dirname, '../protected/netflix/index.html');
-        res.sendFile(protectedPath, (err) => {
+        const indexPath = path.join(protectedStaticPath, 'index.html');
+        res.sendFile(indexPath, (err) => {
             if (err) {
                 console.error("Error serving protected index.html:", err);
-                res.status(500).send("Error loading Netflix app: File not found or permission denied.");
+                res.status(500).send("Error loading Netflix app: File not found.");
             }
         });
     });
-} catch (e) {
-    console.error("Could not serve protected files:", e);
+} else {
+    // If files are missing, at least verify the route works and show a helpful error
+    app.get('/netflix', (req, res) => {
+        res.status(500).send("Configuration Error: Protected files missing from server bundle.");
+    });
 }
 
 // Routes
