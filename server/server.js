@@ -1,12 +1,13 @@
 const path = require('path');
 const dotenv = require("dotenv");
-const dotenvPath = path.join(__dirname, '.env');
-const result = dotenv.config({ path: dotenvPath });
 
-if (result.error) {
-    console.error("Warning: .env file not found or could not be loaded from:", dotenvPath);
-} else {
-    console.log("Environment variables loaded from:", dotenvPath);
+// Only load .env if not in production (Vercel provides env vars automatically)
+if (process.env.NODE_ENV !== 'production') {
+    const dotenvPath = path.join(__dirname, '.env');
+    const result = dotenv.config({ path: dotenvPath });
+    if (result.error) {
+        console.log(".env file not found (this is fine in production)");
+    }
 }
 
 const express = require("express");
@@ -31,12 +32,19 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: false, // Set to true if using HTTPS
+        secure: process.env.NODE_ENV === 'production', // True in production
         maxAge: 24 * 60 * 60 * 1000 // 24 hours
     }
 }));
 
-app.use(express.static(path.join(__dirname, '../public')));
+// Serve static files ONLY if NOT in serverless environment (Vercel handles this via CDN usually)
+// However, for the monolith rewrite to work, we might need this if Vercel passes everything through.
+// Let's keep it but wrap in try-catch to avoid path errors
+try {
+    app.use(express.static(path.join(__dirname, '../public')));
+} catch (e) {
+    console.error("Could not serve static files (expected in serverless):", e);
+}
 
 // MySQL Connection Pool
 const db = mysql.createPool({
@@ -81,7 +89,11 @@ db.query(createTableQuery, (err) => {
 });
 
 // Protected static files for Netflix
-app.use('/netflix', authMiddleware, express.static(path.join(__dirname, '../protected/netflix')));
+try {
+    app.use('/netflix', authMiddleware, express.static(path.join(__dirname, '../protected/netflix')));
+} catch (e) {
+    console.error("Could not serve protected files:", e);
+}
 
 // Routes
 
