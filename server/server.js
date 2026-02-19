@@ -197,7 +197,15 @@ app.get('/api/me', (req, res) => {
 
 // Health Check
 app.get('/ping', (req, res) => {
-    res.json({ message: 'pong v2', timestamp: new Date().toISOString() });
+    res.json({
+        message: 'pong v2',
+        timestamp: new Date().toISOString(),
+        env_check: {
+            has_db_host: !!process.env.DB_HOST,
+            has_db_user: !!process.env.DB_USER,
+            host_value: process.env.DB_HOST ? 'Loaded' : 'Missing' // Don't expose actual host yet
+        }
+    });
 });
 
 if (require.main === module) {
