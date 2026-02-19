@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    console.log("Script v2 loaded - Debugging Active");
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
     const toRegister = document.getElementById('to-register');
